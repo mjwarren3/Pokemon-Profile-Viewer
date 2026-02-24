@@ -4,14 +4,18 @@ import { Heart, ThumbsUp, ThumbsDown } from "lucide-react";
 import { type PokemonResponse } from "@shared/schema";
 import { formatPokemonId, getTypeColor, cn } from "@/lib/pokemon-helpers";
 import { useToggleFavorite, useVote } from "@/hooks/use-pokemon";
+import { usePostHog } from '@posthog/react'
+
 
 export function PokemonCard({ pokemon }: { pokemon: PokemonResponse }) {
   const toggleFavorite = useToggleFavorite();
   const vote = useVote();
+  const posthog = usePostHog();
 
   const handleFavorite = (e: React.MouseEvent) => {
     e.preventDefault();
     toggleFavorite.mutate({ pokemonId: pokemon.id });
+    posthog?.capture('favorite_toggled', { pokemonId: pokemon.id });
   };
 
   const handleVote = (e: React.MouseEvent, type: 1 | -1) => {
@@ -19,6 +23,8 @@ export function PokemonCard({ pokemon }: { pokemon: PokemonResponse }) {
     // If clicking the same vote, remove it (0)
     const newVote = pokemon.userVote === type ? 0 : type;
     vote.mutate({ pokemonId: pokemon.id, vote: newVote });
+    posthog?.capture('vote_cast', { pokemonId: pokemon.id, vote: newVote });
+
   };
 
   return (
