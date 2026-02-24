@@ -3,16 +3,45 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { useAuth } from "@/hooks/use-auth";
+
+import { NavBar } from "@/components/layout/NavBar";
+import { LoadingScreen } from "@/components/ui/Loading";
 import NotFound from "@/pages/not-found";
 
-function Router() {
+import Landing from "@/pages/Landing";
+import Home from "@/pages/Home";
+import Favorites from "@/pages/Favorites";
+import Profile from "@/pages/Profile";
+
+function AppRoutes() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <Switch>
+        <Route path="/" component={Landing} />
+        <Route component={Landing} />
+      </Switch>
+    );
+  }
+
   return (
-    <Switch>
-      {/* Add pages below */}
-      {/* <Route path="/" component={Home}/> */}
-      {/* Fallback to 404 */}
-      <Route component={NotFound} />
-    </Switch>
+    <div className="flex flex-col min-h-screen">
+      <NavBar />
+      <main className="flex-1">
+        <Switch>
+          <Route path="/" component={Home} />
+          <Route path="/favorites" component={Favorites} />
+          <Route path="/pokemon/:id" component={Profile} />
+          <Route component={NotFound} />
+        </Switch>
+      </main>
+    </div>
   );
 }
 
@@ -21,7 +50,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
-        <Router />
+        <AppRoutes />
       </TooltipProvider>
     </QueryClientProvider>
   );
