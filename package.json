@@ -11,6 +11,8 @@
     "db:push": "drizzle-kit push"
   },
   "dependencies": {
+    "@amplitude/analytics-browser": "^2.35.4",
+    "@amplitude/plugin-session-replay-browser": "^1.25.16",
     "@hookform/resolvers": "^3.10.0",
     "@jridgewell/trace-mapping": "^0.3.25",
     "@posthog/react": "^1.8.0",
