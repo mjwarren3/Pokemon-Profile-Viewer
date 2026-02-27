@@ -13,9 +13,33 @@ import Landing from "@/pages/Landing";
 import Home from "@/pages/Home";
 import Favorites from "@/pages/Favorites";
 import Profile from "@/pages/Profile";
+import { useEffect } from "react";
+import mixpanel from "mixpanel-browser";
 
 function AppRoutes() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    if (isAuthenticated && user?.id) {
+      mixpanel.identify(user.id); // stable backend user id
+      mixpanel.people.set({
+        $email: user.email ?? undefined,
+        $first_name: user.firstName ?? undefined,
+        $last_name: user.lastName ?? undefined,
+      });
+    } else {
+      mixpanel.reset(); // clear identity on logged-out state
+    }
+  }, [
+    isLoading,
+    isAuthenticated,
+    user?.id,
+    user?.email,
+    user?.firstName,
+    user?.lastName,
+  ]);
 
   if (isLoading) {
     return <LoadingScreen />;
