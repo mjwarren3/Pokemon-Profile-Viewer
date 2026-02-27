@@ -15,8 +15,10 @@ import Favorites from "@/pages/Favorites";
 import Profile from "@/pages/Profile";
 import { useEffect } from "react";
 import mixpanel from "mixpanel-browser";
+import { usePostHog } from "@posthog/react";
 
 function AppRoutes() {
+  const posthog = usePostHog();
   const { user, isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
@@ -33,6 +35,28 @@ function AppRoutes() {
       mixpanel.reset(); // clear identity on logged-out state
     }
   }, [
+    isLoading,
+    isAuthenticated,
+    user?.id,
+    user?.email,
+    user?.firstName,
+    user?.lastName,
+  ]);
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    if (isAuthenticated && user?.id) {
+      posthog.identify(user.id, {
+        email: user.email,
+        first_name: user.firstName,
+        last_name: user.lastName,
+      });
+    } else {
+      posthog.reset();
+    }
+  }, [
+    posthog,
     isLoading,
     isAuthenticated,
     user?.id,
