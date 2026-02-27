@@ -46,12 +46,14 @@ function AppRoutes() {
   useEffect(() => {
     if (isLoading) return;
 
-    if (isAuthenticated && user?.id) {
+    if (isAuthenticated && user?.id && user?.firstName) {
       posthog.identify(user.id, {
         email: user.email,
         first_name: user.firstName,
         last_name: user.lastName,
       });
+
+      posthog.group("company", "Our Beautiful Company");
     } else {
       posthog.reset();
     }
