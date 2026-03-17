@@ -6,17 +6,22 @@ import { formatPokemonId, getTypeColor, cn } from "@/lib/pokemon-helpers";
 import { useToggleFavorite, useVote } from "@/hooks/use-pokemon";
 import { usePostHog } from "@posthog/react";
 import mixpanel from "mixpanel-browser";
+import { useStatsigClient } from "@statsig/react-bindings";
 
 export function PokemonCard({ pokemon }: { pokemon: PokemonResponse }) {
   const toggleFavorite = useToggleFavorite();
   const vote = useVote();
   const posthog = usePostHog();
+  const { client } = useStatsigClient();
 
   const handleFavorite = (e: React.MouseEvent) => {
     e.preventDefault();
     toggleFavorite.mutate({ pokemonId: pokemon.id });
     posthog?.capture("favorite_toggled", { pokemonId: pokemon.id });
     mixpanel.track("Favorited a Pokemon", { pokemonId: pokemon.id });
+    client.logEvent("favorite_toggled", "pokemon", {
+      pokemonId: String(pokemon.id),
+    });
   };
 
   const handleVote = (e: React.MouseEvent, type: 1 | -1) => {
@@ -25,6 +30,9 @@ export function PokemonCard({ pokemon }: { pokemon: PokemonResponse }) {
     const newVote = pokemon.userVote === type ? 0 : type;
     vote.mutate({ pokemonId: pokemon.id, vote: newVote });
     posthog?.capture("vote_cast", { pokemonId: pokemon.id, vote: newVote });
+    client.logEvent("voted", "pokemon", {
+      pokemonId: String(pokemon.id),
+    });
   };
 
   return (

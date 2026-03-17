@@ -16,6 +16,9 @@ import Profile from "@/pages/Profile";
 import { useEffect } from "react";
 import mixpanel from "mixpanel-browser";
 import { usePostHog } from "@posthog/react";
+import { StatsigProvider, useClientAsyncInit } from "@statsig/react-bindings";
+import { StatsigAutoCapturePlugin } from "@statsig/web-analytics";
+import { StatsigSessionReplayPlugin } from "@statsig/session-replay";
 
 function AppRoutes() {
   const posthog = usePostHog();
@@ -96,13 +99,26 @@ function AppRoutes() {
 }
 
 function App() {
+  const { client } = useClientAsyncInit(
+    "client-P5OkaNK0jyfr4b1YFlHJheUW3qtPDF9LSyYI3HJW636",
+    { userID: "a-user" },
+    {
+      plugins: [
+        new StatsigAutoCapturePlugin(),
+        new StatsigSessionReplayPlugin(),
+      ],
+    },
+  );
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <AppRoutes />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <StatsigProvider client={client} loadingComponent={<div>Loading...</div>}>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <AppRoutes />
+        </TooltipProvider>
+      </QueryClientProvider>
+    </StatsigProvider>
   );
 }
 
